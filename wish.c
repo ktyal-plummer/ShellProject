@@ -270,8 +270,7 @@ void batch(char *textFile) {
   char * line = NULL;
   size_t len = 0;
   ssize_t read;
-  char path[20][255] = { "" };
-  strcpy(path[0], "bin");
+  char path[20][255] = { "bin" };
   char error_message[30] = "An error has occurred\n";
   char fork_error_msg[30] = "Fork failed\n";
 
@@ -308,6 +307,7 @@ void batch(char *textFile) {
         for(int i = 0; i < 20; i++) {
           strcpy(path[i], "");
         }
+        
         while (commandArgs[argsIndex] != NULL) {
           strcpy(path[pathIndex], commandArgs[argsIndex]);
           argsIndex++;
@@ -334,9 +334,9 @@ void batch(char *textFile) {
 
               if(strcmp(commandArgs[0], "ls") == 0){
                   strcpy(dir, "/");
-                } else {
+              } else {
                   strcpy(dir, "./"); 
-                }
+              }
                 strcat(dir, path[i]);
                 strcat(dir, "/");
                 strcat(dir, commandArgs[0]);
