@@ -1,0 +1,2 @@
+void interactive();
+void batch();
