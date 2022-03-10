@@ -1,0 +1,2 @@
+wc tests/10.rc > tests/1.out;
+tests/p1.sh >> tests/1.out

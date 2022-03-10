@@ -98,18 +98,29 @@ void interactive()
               int pathLen = strlen(path[i]);
               int cmdLen = strlen(commandArgs[0]);
               char *dir = malloc( pathLen + cmdLen + 1 );
-              int result;
+              int result = 1;
 
-              if(strcmp(commandArgs[0], "ls") == 0){
-                strcpy(dir, "/");
-              } else {
-                strcpy(dir, "./"); 
-              }
               strcat(dir, path[i]);
               strcat(dir, "/");
               strcat(dir, commandArgs[0]);
 
-              result = access(dir, X_OK);
+              if (access(dir, X_OK) == 0) {
+                result = 0;
+              } else {
+                strcpy(dir, "");
+                
+                if(strcmp(commandArgs[0], "ls") == 0){
+                  strcpy(dir, "/");
+                } else {
+                  strcpy(dir, "./"); 
+                }
+                strcat(dir, path[i]);
+                strcat(dir, "/");
+                strcat(dir, commandArgs[0]);
+
+                result = access(dir, X_OK);
+              }
+              
               if (result == 0) {
                 foundFile = 1;
                 if (commandArgs[1] != NULL && strcmp(commandArgs[1], ">") == 0) {
@@ -124,14 +135,16 @@ void interactive()
                 } else {
                   createFork(dir, commandArgs);
                 }
-              } else {
-                write(STDERR_FILENO, error_message, strlen(error_message));
               }
+              
               free(dir);
             } else {
               break;
             }
           }  
+          if (!foundFile) {
+            write(STDERR_FILENO, error_message, strlen(error_message));
+          }
         } else {
           //printf("Multiargs\n");
         }
@@ -159,7 +172,7 @@ void batch(char *textFile) {
     char *commandArgs[10] = { NULL };
     getCommandArguments(commandArgs, line);
 
-    if(strcmp(commandArgs[0], "exit") == 0) {
+        if(strcmp(commandArgs[0], "exit") == 0) {
       if (commandArgs[1] == NULL) {
         exit(0);
       } else {
@@ -206,18 +219,29 @@ void batch(char *textFile) {
               int pathLen = strlen(path[i]);
               int cmdLen = strlen(commandArgs[0]);
               char *dir = malloc( pathLen + cmdLen + 1 );
-              int result;
+              int result = 1;
 
-              if(strcmp(commandArgs[0], "ls") == 0){
-                strcpy(dir, "/");
-              } else {
-                strcpy(dir, "./"); 
-              }
               strcat(dir, path[i]);
               strcat(dir, "/");
               strcat(dir, commandArgs[0]);
 
-              result = access(dir, X_OK);
+              if (access(dir, X_OK) == 0) {
+                result = 0;
+              } else {
+                strcpy(dir, "");
+                
+                if(strcmp(commandArgs[0], "ls") == 0){
+                  strcpy(dir, "/");
+                } else {
+                  strcpy(dir, "./"); 
+                }
+                strcat(dir, path[i]);
+                strcat(dir, "/");
+                strcat(dir, commandArgs[0]);
+
+                result = access(dir, X_OK);
+              }
+              
               if (result == 0) {
                 foundFile = 1;
                 if (commandArgs[1] != NULL && strcmp(commandArgs[1], ">") == 0) {
@@ -232,14 +256,16 @@ void batch(char *textFile) {
                 } else {
                   createFork(dir, commandArgs);
                 }
-              } else {
-                write(STDERR_FILENO, error_message, strlen(error_message));
               }
+              
               free(dir);
             } else {
               break;
             }
           }  
+          if (!foundFile) {
+            write(STDERR_FILENO, error_message, strlen(error_message));
+          }
         } else {
           //printf("Multiargs\n");
         }

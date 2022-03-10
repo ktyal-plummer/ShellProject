@@ -1,2 +1,5 @@
-cd
+path /usr/bin tests
+wc tests/10.rc
+cat
+p1.sh
 exit
