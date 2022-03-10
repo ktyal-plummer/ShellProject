@@ -124,7 +124,7 @@ void interactive()
               if (result == 0) {
                 foundFile = 1;
                 if (commandArgs[1] != NULL && strcmp(commandArgs[1], ">") == 0) {
-                  if (commandArgs[2] != NULL) {
+                  if (commandArgs[2] != NULL && commandArgs[3] == NULL) {
                     printf("Carrot with output\n");
                     commandArgs[1] = NULL;
                     commandArgs[2] = NULL;
@@ -245,8 +245,7 @@ void batch(char *textFile) {
               if (result == 0) {
                 foundFile = 1;
                 if (commandArgs[1] != NULL && strcmp(commandArgs[1], ">") == 0) {
-                  if (commandArgs[2] != NULL) {
-                    printf("Carrot with output\n");
+                  if (commandArgs[2] != NULL && commandArgs[3] == NULL) {
                     commandArgs[1] = NULL;
                     commandArgs[2] = NULL;
                     createFork(dir, commandArgs);
