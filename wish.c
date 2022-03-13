@@ -5,19 +5,17 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
-void removeSpaces(char *str)
-{
-	int i = 0;
+void removeSpaces(char *str) {
+  int i = 0;
   int j = 0;
-  
-	while (str[i])
-	{
-		if (str[i] != ' '){
+
+  while(str[i]) {
+    if(str[i] != ' ') { 
       str[j++] = str[i];
     }
-		i++;
-	}
-	str[j] = '\0';
+    i++;
+  }
+  str[j] = '\0';
 }
 
 void getCommandArguments(char* commandArgs[], char command[]){
