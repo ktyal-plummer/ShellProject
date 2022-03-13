@@ -329,7 +329,6 @@ void batch(int numArgs, char *textFile) {
         } else if(fileArgs[1] != NULL){
           if(fileArgs[2] == NULL){
             outputFile = 1;
-            //printf("Valid input and output file\n");
           } else {
             correctInput = 0;
             write(STDERR_FILENO, error_message, strlen(error_message));
