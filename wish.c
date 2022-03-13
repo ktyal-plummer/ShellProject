@@ -251,7 +251,8 @@ void batch(int numArgs, char *textFile) {
 
   fp = fopen(textFile, "r");
   if (fp == NULL) {
-    exit(0);
+    write(STDERR_FILENO, error_message, strlen(error_message));
+    exit(1);
   }
 
   while ((read = getline(&line, &len, fp)) != -1) {
