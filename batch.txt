@@ -1,4 +1,3 @@
-ls tests/p2a-test>./temp/output1
-cat ./temp/output1
-rm -f ./temp/output1
+                    
+          echo test variable whitespace!           
 exit
