@@ -9,9 +9,8 @@ int main(int argc, char *argv[])
   {
     interactive();
   } 
-  else if(argc == 2)
-  {
-    batch(argv[1]);
+  else {
+    batch(argc, argv[1]);
   }
   
   return 0;
