@@ -263,7 +263,7 @@ void batch(int numArgs, char *textFile) {
 
   // check for more than one input file 
   if(numArgs > 2) {
-    write(STDERR_FILENO, error_message, strlen(error_message));
+    write(STDERR_FILENO, error_message, strlen(error_message)); 
     exit(1);
   }
 
@@ -372,6 +372,8 @@ void batch(int numArgs, char *textFile) {
             }
           }
         // other
+        } else if(strcmp(commandArgs[0], "&") == 0) {
+          
         } else {
           if (strcmp(path[0], "") == 0) {
             write(STDERR_FILENO, error_message, strlen(error_message));
@@ -431,7 +433,7 @@ void batch(int numArgs, char *textFile) {
                         dup2(save_out, fileno(stdout));
                         close(save_out);
                       } else {
-                         execv(dir, commandArgs);
+                        execv(dir, commandArgs);
                       }
                     } else {
                       wait(&rc);
