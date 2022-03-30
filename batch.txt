@@ -1,3 +1,5 @@
-path tests
-p1.sh & p2.sh &
+path /bin tests
+p1.sh>/tmp/output201
+cat /tmp/output201
+rm -rf /tmp/output201
 exit
