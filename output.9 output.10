@@ -1,0 +1,16 @@
+Makefile
+README.md
+batch.txt
+main.c
+main.o
+output.9 output.10
+output.9output.10
+temp
+test-wish.sh
+tester
+tests
+tests-out
+wish
+wish.c
+wish.h
+wish.o

@@ -5,17 +5,38 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
-void removeSpaces(char *str) {
+void removeSpaces(char *str)
+{
   int i = 0;
   int j = 0;
 
-  while(str[i]) {
-    if(str[i] != ' ') { 
-      str[j++] = str[i];
-    }
+  j = 0;
+  while (str[j] == ' ' || str[j] == '\t' || str[j] == '\n')
+  {
+    j++;
+  }
+
+  i = 0;
+  while (str[i + j] != '\0')
+  {
+    str[i] = str[i + j];
     i++;
   }
-  str[j] = '\0';
+  str[i] = '\0';
+
+  i = 0;
+  j = -1;
+  while (str[i] != '\0')
+  {
+    if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
+    {
+      j = i;
+    }
+
+    i++;
+  }
+
+  str[j + 1] = '\0';
 }
 
 void getCommandArguments(char* commandArgs[], char command[], char tokArgs[]){
@@ -258,62 +279,47 @@ void interactive()
   }
 }
 
-void runCommand(char *commandArgs[], char path[20][255])
+void runCommand(char *commandArgs[], char path[20][255], int hasOutput)
 {
   char error_message[30] = "An error has occurred\n";
   char fork_error_msg[30] = "Fork failed\n";
 
-  // parse input for output file
+  // error if incorrect file input
   int correctInput = 1;
   int outputFile = 0;
-  int foundOutput = 0;
-  int parseIndex = 0;
-  int fileIndex = 0;
-  char argument[255] = "";
-  char *fileArgs[3] = {NULL};
+  char *command = strdup(commandArgs[0]);
 
-  while (commandArgs[parseIndex] != NULL)
+  // for(int i=0; i<10; i++)
+  // {
+  //   printf("arg %d: %s\n", i, commandArgs[i]);
+  // }
+
+  if (hasOutput)
   {
-    int hasOutput = 0;
-    if (strchr(commandArgs[parseIndex], '>') != NULL)
-    {
-      hasOutput = 1;
-      foundOutput = 1;
-    }
-
-    if (hasOutput)
-    {
-      strcpy(argument, commandArgs[parseIndex]);
-      char *token = strtok(argument, ">");
-
-      while (token != NULL)
-      {
-        fileArgs[fileIndex] = token;
-        token = strtok(NULL, ">");
-        fileIndex++;
-      }
-    }
-    parseIndex++;
-  }
-
-  // error if incorrect file input
-  if (foundOutput)
-  {
-    if (fileArgs[0] == NULL)
+    if (commandArgs[0] == NULL || commandArgs[1] == NULL)
     {
       correctInput = 0;
       write(STDERR_FILENO, error_message, strlen(error_message));
     }
-    else if (fileArgs[1] != NULL)
+    else
     {
-      if (fileArgs[2] == NULL)
-      {
-        outputFile = 1;
-      }
-      else
+      if(strchr(commandArgs[1], ' ') != NULL)
       {
         correctInput = 0;
         write(STDERR_FILENO, error_message, strlen(error_message));
+      }
+      else 
+      {
+        if (commandArgs[2] == NULL)
+        {
+          command = strtok(command, " \n \r \0");
+          outputFile = 1;
+        }
+        else
+        {
+          correctInput = 0;
+          write(STDERR_FILENO, error_message, strlen(error_message));
+        }
       }
     }
   }
@@ -392,13 +398,13 @@ void runCommand(char *commandArgs[], char path[20][255])
             if (foundFile == 0 && strcmp(path[i], "") != 0)
             {
               int pathLen = strlen(path[i]);
-              int cmdLen = strlen(commandArgs[0]);
+              int cmdLen = strlen(command);
               char *dir = malloc(pathLen + cmdLen + 1);
               int result = 1;
 
               strcat(dir, path[i]);
               strcat(dir, "/");
-              strcat(dir, commandArgs[0]);
+              strcat(dir, command);
 
               if (access(dir, X_OK) == 0)
               {
@@ -413,7 +419,7 @@ void runCommand(char *commandArgs[], char path[20][255])
                   strcpy(dir, startSlashes[i]);
                   strcat(dir, path[i]);
                   strcat(dir, "/");
-                  strcat(dir, commandArgs[0]);
+                  strcat(dir, command);
 
                   result = access(dir, X_OK);
                   if (!result)
@@ -437,7 +443,11 @@ void runCommand(char *commandArgs[], char path[20][255])
                 {
                   if (outputFile)
                   {
-                    int out = open(fileArgs[1], O_RDWR | O_CREAT | O_APPEND, 0600);
+                    char *executeArgs[5] = {NULL};
+                    getCommandArguments(executeArgs, commandArgs[0], " \n \r \0");
+                    removeSpaces(commandArgs[1]);
+
+                    int out = open(commandArgs[1], O_RDWR | O_CREAT | O_APPEND, 0600);
                     if (out == -1)
                     {
                       write(STDERR_FILENO, error_message, strlen(error_message));
@@ -447,9 +457,8 @@ void runCommand(char *commandArgs[], char path[20][255])
                     {
                       write(STDERR_FILENO, error_message, strlen(error_message));
                     }
-
-                    strcpy(commandArgs[1], fileArgs[0]);
-                    execv(dir, commandArgs);
+                  
+                    execv(dir, executeArgs);
 
                     fflush(stdout);
                     close(out);
@@ -482,6 +491,7 @@ void runCommand(char *commandArgs[], char path[20][255])
       }
     }
   }
+  free(command);
 }
 
 int contains(char s[], char c)
@@ -526,13 +536,19 @@ void batch(int numArgs, char *textFile)
   while ((read = getline(&line, &len, fp)) != -1)
   {
     int multiCommand = 0;
+    int hasOutput = 0;
     int validArguments = 0;
     char *commandArgs[10] = {NULL};
 
-    if (contains(line, '&'))
+    if(strchr(line, '&') != NULL)
     {
       getCommandArguments(commandArgs, line, "&");
       multiCommand = 1;
+    }
+    else if(strchr(line, '>') != NULL)
+    {
+      getCommandArguments(commandArgs, line, ">");
+      hasOutput = 1;
     }
     else
     {
@@ -549,12 +565,6 @@ void batch(int numArgs, char *textFile)
       }
     }
 
-    // for (int i = 0; i < 10; i++)
-    // {
-    //   printf("Arg[%d]: %s\n", i, commandArgs[i]);
-    // }
-    // printf("\n");
-
     if (multiCommand)
     {
       for (int i = 0; i < 10; i++)
@@ -562,8 +572,17 @@ void batch(int numArgs, char *textFile)
         if (commandArgs[i] != NULL)
         {
           int validArguments = 0;
+          int hasOutput = 0;
           char *multiCommandArgs[10] = {NULL};
-          getCommandArguments(multiCommandArgs, commandArgs[i], " \n \r \0");
+          if(strchr(commandArgs[i], '>') != NULL)
+          {
+            getCommandArguments(multiCommandArgs, commandArgs[i], ">");
+            hasOutput = 1;
+          }
+          else
+          {
+            getCommandArguments(multiCommandArgs, commandArgs[i], " \n \r \0");
+          }
 
           // check to make sure something other than whitespace was pulled
           for (int i = 0; i < 10; i++)
@@ -577,14 +596,14 @@ void batch(int numArgs, char *textFile)
 
           if (validArguments)
           {
-            runCommand(multiCommandArgs, path);
+            runCommand(multiCommandArgs, path, hasOutput);
           }
         }
       }
     }
     else if (validArguments)
     {
-      runCommand(commandArgs, path);
+      runCommand(commandArgs, path, hasOutput);
     }
   }
 
